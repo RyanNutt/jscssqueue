@@ -6,7 +6,9 @@ PHP package for registering and enqueuing JavaScript and CSS files.
 
 ### Installation
 
-Eventually this will be on Packagist, but it's not there yet...
+```
+composer require aelora/js-css-queue
+```
 
 ### Usage
 
