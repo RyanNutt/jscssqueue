@@ -42,7 +42,7 @@ class CSS {
       self::init();
     }
     if ( !isset( self::$registered[ $name ] ) ) {
-      if ( strpos( $name, '/' ) !== false ) {
+      if ( strpos( $name, '/' ) === false ) {
         throw new \Exception( $name . ' not found in registered styles and does not appear to be a URL' );
       }
       $to_queue = [
