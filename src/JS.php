@@ -25,7 +25,7 @@ class JS {
     if ( self::$hasInit ) {
       return;
     }
-    if ( file_exists( self::$configFile ) ) {
+    if ( !empty( self::$configFile ) && file_exists( self::$configFile ) ) {
       /* Specified config file before first call */
       self::readConfig( self::$configFile );
     }
@@ -38,6 +38,20 @@ class JS {
       self::readConfig( __DIR__ . '/jscssqueue.php' );
     }
     self::$hasInit = true;
+  }
+
+  /**
+   * Allows you to reset by loading another config file
+   * @param type $config_file
+   */
+  public function reset( $configFile = '' ) {
+    self::$configFile = $configFile;
+    self::$hasInit = false;
+    self::$queued = [];
+    self::$registered = [];
+    CSS::reset();
+
+    self::init();
   }
 
   private static function readConfig( $path ) {
@@ -169,7 +183,7 @@ class JS {
   public function clear() {
     self::$queued = [];
   }
-  
+
   private static function is_queued( $name ) {
     return isset( self::$queued[ $name ] );
   }

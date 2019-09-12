@@ -15,6 +15,11 @@ class CSS {
     JS::init();
   }
 
+  public static function reset() {
+    self::$queued = [];
+    self::$registered = [];
+  }
+
   public static function register( $url, $name = false, $version = false, $dependencies = [], $attributes = [], $init = true ) {
     if ( $init ) {
       self::init();
