@@ -29,7 +29,7 @@ class JS {
       /* Specified config file before first call */
       self::readConfig( self::$configFile );
     }
-    else if ( function_exists( 'config_path' ) && file_exists( config_path( 'jsscssqueue.php' ) ) ) {
+    else if ( function_exists( 'config_path' ) && file_exists( config_path( 'jscssqueue.php' ) ) ) {
       /* Laravel, or own config_path function */
       self::readConfig( config_path( 'jscssqueue.php' ) );
     }
@@ -102,10 +102,11 @@ class JS {
    *  URL doesn't do any dependency checking. 
    */
   public static function enqueue( $name, $init = true ) {
+    if ( $init ) {
+      self::init();
+    }
     if ( !isset( self::$registered[ $name ] ) ) {
-      if ( $init ) {
-        self::init();
-      }
+
       if ( strpos( $name, '/' ) !== false ) {
         throw new \Exception( $name . ' not found in registered scripts and does not appear to be a URL' );
       }
