@@ -1,6 +1,6 @@
 {
   "name": "aelora/js-css-queue",
-  "description": "Classes for queueing JavaScript and CSS files, similar to how WordPress does it",
+  "description": "PHP package for queueing JavaScript and CSS files",
   "authors": [
     {
       "name": "Ryan Nutt",
