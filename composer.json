@@ -1,6 +1,7 @@
 {
   "name": "aelora/js-css-queue",
   "description": "PHP package for queueing JavaScript and CSS files",
+  "license": "GPL-3.0-or-later",
   "authors": [
     {
       "name": "Ryan Nutt",
