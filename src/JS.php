@@ -7,7 +7,82 @@ class JS {
   private static $registered = [];
   private static $queued = [];
 
-  public static function register( $url, $name = false, $version = false, $dependencies = [], $attributes = [] ) {
+  /**
+   * Whether this class and its CSS buddy have been initialized.
+   * @var boolean
+   */
+  public static $hasInit = false;
+
+  /**
+   * Full path to the config file. If it's empty, a few other checks
+   * are made before giving up that there's not a config file. 
+   * 
+   * @var string
+   */
+  public static $configFile = '';
+
+  public static function init() {
+    if ( self::$hasInit ) {
+      return;
+    }
+    if ( file_exists( self::$configFile ) ) {
+      /* Specified config file before first call */
+      self::readConfig( self::$configFile );
+    }
+    else if ( file_exists( __DIR__ . '/jscssqueue.php' ) ) {
+      /* Config is next to classes */
+      self::readConfig( __DIR__ . '/jscssqueue.php' );
+    }
+    else if ( function_exists( 'config_path' ) && file_exists( config_path( 'jsscssqueue.pho' ) ) ) {
+      /* Laravel */
+      self::readConfig( config_path( 'jscssqueue.php' ) );
+    }
+    self::$hasInit = true;
+  }
+
+  private static function readConfig( $path ) {
+    $config = include($path);
+    if ( isset( $config[ 'register' ][ 'js' ] ) && is_array( $config[ 'register' ][ 'js' ] ) ) {
+      foreach ( $config[ 'register' ][ 'js' ] as $k => $script ) {
+        if ( is_array( $config[ 'register' ][ 'js' ][ $k ] ) ) {
+          $toAdd = array_merge( [ 'name' => $k, 'url' => '', 'version' => false, 'dependencies' => [], 'attributes' => [] ], $script );
+        }
+        else {
+          $toAdd = [ 'name' => $k, 'url' => $script, 'version' => false, 'dependencies' => [], 'attributes' => [] ];
+        }
+        self::register( $toAdd[ 'url' ], $toAdd[ 'name' ], $toAdd[ 'version' ], $toAdd[ 'dependencies' ], $toAdd[ 'attributes' ], false );
+      }
+    }
+    if ( isset( $config[ 'enqueue' ][ 'js' ] ) && is_array( $config[ 'enqueue' ][ 'js' ] ) ) {
+      foreach ( $config[ 'enqueue' ][ 'js' ] as $name ) {
+        self::enqueue( $name, false );
+      }
+    }
+
+
+    if ( isset( $config[ 'register' ][ 'css' ] ) && is_array( $config[ 'register' ][ 'css' ] ) ) {
+      foreach ( $config[ 'register' ][ 'css' ] as $k => $script ) {
+        if ( is_array( $config[ 'register' ][ 'css' ][ $k ] ) ) {
+          $toAdd = array_merge( [ 'name' => $k, 'url' => '', 'version' => false, 'dependencies' => [], 'attributes' => [] ], $script );
+        }
+        else {
+          $toAdd = [ 'name' => $k, 'url' => $script, 'version' => false, 'dependencies' => [], 'attributes' => [] ];
+        }
+        CSS::register( $toAdd[ 'url' ], $toAdd[ 'name' ], $toAdd[ 'version' ], $toAdd[ 'dependencies' ], $toAdd[ 'attributes' ], false );
+      }
+    }
+
+    if ( isset( $config[ 'enqueue' ][ 'css' ] ) && is_array( $config[ 'enqueue' ][ 'css' ] ) ) {
+      foreach ( $config[ 'enqueue' ][ 'css' ] as $name ) {
+        CSS::enqueue( $name, false );
+      }
+    }
+  }
+
+  public static function register( $url, $name = false, $version = false, $dependencies = [], $attributes = [], $init = true ) {
+    if ( $init ) {
+      self::init();
+    }
     if ( empty( $name ) ) {
       $name = md5( $name );
     }
@@ -26,8 +101,11 @@ class JS {
    * @param string $name Can either be a registered script by name or a url. Using a 
    *  URL doesn't do any dependency checking. 
    */
-  public static function enqueue( $name ) {
+  public static function enqueue( $name, $init = true ) {
     if ( !isset( self::$registered[ $name ] ) ) {
+      if ( $init ) {
+        self::init();
+      }
       if ( strpos( $name, '/' ) !== false ) {
         throw new \Exception( $name . ' not found in registered scripts and does not appear to be a URL' );
       }
@@ -54,7 +132,18 @@ class JS {
     self::$queued[ $name ] = $to_queue;
   }
 
+  public static function dequeue( $name ) {
+    self::init();
+    if ( isset( self::$queued[ $name ] ) ) {
+      unset( self::$queued[ $name ] );
+    }
+    else if ( isset( self::$queued[ md5( $name ) ] ) ) {
+      unset( self::$queued[ md5( $name ) ] );
+    }
+  }
+
   public static function write() {
+    self::init();
     if ( !empty( self::$queued ) ) {
       foreach ( self::$queued as $js ) {
         $ver = '';

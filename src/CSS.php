@@ -7,7 +7,18 @@ class CSS {
   private static $registered = [];
   private static $queued = [];
 
-  public static function register( $url, $name = false, $version = false, $dependencies = [], $attributes = [] ) {
+  /**
+   * Setup the fields. This one just hands off to the init() method 
+   * in the JavaScript class. 
+   */
+  public static function init() {
+    JS::init();
+  }
+
+  public static function register( $url, $name = false, $version = false, $dependencies = [], $attributes = [], $init = true ) {
+    if ( $init ) {
+      self::init();
+    }
     if ( empty( $name ) ) {
       $name = md5( $name );
     }
@@ -26,7 +37,10 @@ class CSS {
    * @param string $name Can either be a registered style by name or a url. Using a 
    *  URL doesn't do any dependency checking. 
    */
-  public static function enqueue( $name ) {
+  public static function enqueue( $name, $init = true ) {
+    if ( $init ) {
+      self::init();
+    }
     if ( !isset( self::$registered[ $name ] ) ) {
       if ( strpos( $name, '/' ) !== false ) {
         throw new \Exception( $name . ' not found in registered styles and does not appear to be a URL' );
@@ -54,7 +68,18 @@ class CSS {
     self::$queued[ $name ] = $to_queue;
   }
 
+  public static function dequeue( $name ) {
+    self::init();
+    if ( isset( self::$queued[ $name ] ) ) {
+      unset( self::$queued[ $name ] );
+    }
+    else if ( isset( self::$queued[ md5( $name ) ] ) ) {
+      unset( self::$queued[ md5( $name ) ] );
+    }
+  }
+
   public static function write() {
+    self::init();
     if ( !empty( self::$queued ) ) {
       foreach ( self::$queued as $css ) {
         $ver = '';
