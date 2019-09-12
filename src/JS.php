@@ -163,6 +163,13 @@ class JS {
     }
   }
 
+  /**
+   * Clears out the queue of scripts
+   */
+  public function clear() {
+    self::$queued = [];
+  }
+  
   private static function is_queued( $name ) {
     return isset( self::$queued[ $name ] );
   }

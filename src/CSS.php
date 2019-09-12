@@ -98,6 +98,13 @@ class CSS {
     }
   }
 
+  /**
+   * Clears out queued style sheets.
+   */
+  public static function clear() {
+    self::$queued = [];
+  }
+
   private static function is_queued( $name ) {
     return isset( self::$queued[ $name ] );
   }
