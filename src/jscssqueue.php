@@ -8,14 +8,9 @@ return [
      * before your view is rendered. 
      */
     'register' => [
-        'js' => [
-            'jquery' => 'https://jquery.com/file.js'
+        'js' => [            
         ],
         'css' => [
-            'bootstrap' => [
-                'url' => 'bootstrap.css',
-                'version' => '1.2'
-            ]
         ]
     ],
     /* Enqueue any styles and scripts, by their handle, that should
@@ -23,10 +18,8 @@ return [
      */
     'enqueue' => [
         'js' => [
-            'jquery'
         ],
         'css' => [
-            'bootstrap'
         ]
     ]
 ];
