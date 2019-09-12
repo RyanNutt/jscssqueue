@@ -29,13 +29,13 @@ class JS {
       /* Specified config file before first call */
       self::readConfig( self::$configFile );
     }
+    else if ( function_exists( 'config_path' ) && file_exists( config_path( 'jsscssqueue.php' ) ) ) {
+      /* Laravel, or own config_path function */
+      self::readConfig( config_path( 'jscssqueue.php' ) );
+    }
     else if ( file_exists( __DIR__ . '/jscssqueue.php' ) ) {
       /* Config is next to classes */
       self::readConfig( __DIR__ . '/jscssqueue.php' );
-    }
-    else if ( function_exists( 'config_path' ) && file_exists( config_path( 'jsscssqueue.pho' ) ) ) {
-      /* Laravel */
-      self::readConfig( config_path( 'jscssqueue.php' ) );
     }
     self::$hasInit = true;
   }
