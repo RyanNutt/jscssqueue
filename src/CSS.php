@@ -89,7 +89,7 @@ class CSS {
       foreach ( self::$queued as $css ) {
         $ver = '';
         if ( $css[ 'version' ] !== false ) {
-          $ver = (strpos( $css[ 'url' ], '?' ) === false ? '?' : '&') . $css[ 'version' ];
+          $ver = (strpos( $css[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $css[ 'version' ];
         }
         echo '<link rel="stylesheet" type="text/css" href="' . $css[ 'url' ] . $ver . '"';
         echo!empty( $css[ 'name' ] ) ? ' id="' . $css[ 'name' ] . '"' : '';

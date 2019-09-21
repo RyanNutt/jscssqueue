@@ -163,7 +163,7 @@ class JS {
       foreach ( self::$queued as $js ) {
         $ver = '';
         if ( $js[ 'version' ] !== false ) {
-          $ver = (strpos( $js[ 'url' ], '?' ) === false ? '?' : '&') . $js[ 'version' ];
+          $ver = (strpos( $js[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $js[ 'version' ];
         }
         echo '<script type="text/javascript" src="' . $js[ 'url' ] . $ver . '"';
         echo!empty( $js[ 'name' ] ) ? ' id="' . $js[ 'name' ] . '"' : '';
