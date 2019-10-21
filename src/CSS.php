@@ -46,7 +46,7 @@ class CSS {
     if ( $init ) {
       self::init();
     }
-    if ( !isset( self::$registered[ $name ] ) ) {
+    if ( ! isset( self::$registered[ $name ] ) ) {
       if ( strpos( $name, '/' ) === false ) {
         throw new \Exception( $name . ' not found in registered styles and does not appear to be a URL' );
       }
@@ -64,7 +64,7 @@ class CSS {
 
     if ( isset( $to_queue[ 'dependencies' ] ) && is_array( $to_queue[ 'dependencies' ] ) && count( $to_queue[ 'dependencies' ] ) > 0 ) {
       foreach ( $to_queue[ 'dependencies' ] as $dep ) {
-        if ( !self::is_queued( $dep ) ) {
+        if ( ! self::is_queued( $dep ) ) {
           self::enqueue( $dep );
         }
       }
@@ -83,22 +83,37 @@ class CSS {
     }
   }
 
+  public static function write_single( $style ) {
+    self::init();
+    if ( preg_match( '/^https?:\/\//', $style ) || preg_match( '/^\/\//', $style ) ) {
+      /* It's a link, just write it out */
+      echo '<link rel="stylesheet" type="text/css" href="' . $style . '">';
+    }
+    else if ( isset( self::$registered[ $style ] ) ) {
+      $ver = '';
+      $css = self::$registered[ $style ];
+      if ( $css[ 'version' ] !== false ) {
+        $ver = (strpos( $css[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $css[ 'version' ];
+      }
+      echo '<link rel="stylesheet" type="text/css" href="' . $css[ 'url' ] . $ver . '"';
+      echo ! empty( $css[ 'name' ] ) ? ' id="' . $css[ 'name' ] . '"' : '';
+      if ( is_array( $css[ 'attributes' ] ) && count( $css[ 'attributes' ] ) > 0 ) {
+        foreach ( $css[ 'attributes' ] as $k => $v ) {
+          echo ' ' . $k . '="' . htmlentities( $v ) . '"';
+        }
+      }
+      echo '>';
+    }
+    else {
+      throw new \Exception( $style . ' not found in registered styles' );
+    }
+  }
+
   public static function write() {
     self::init();
-    if ( !empty( self::$queued ) ) {
-      foreach ( self::$queued as $css ) {
-        $ver = '';
-        if ( $css[ 'version' ] !== false ) {
-          $ver = (strpos( $css[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $css[ 'version' ];
-        }
-        echo '<link rel="stylesheet" type="text/css" href="' . $css[ 'url' ] . $ver . '"';
-        echo!empty( $css[ 'name' ] ) ? ' id="' . $css[ 'name' ] . '"' : '';
-        if ( is_array( $css[ 'attributes' ] ) && count( $css[ 'attributes' ] ) > 0 ) {
-          foreach ( $css[ 'attributes' ] as $k => $v ) {
-            echo ' ' . $k . '="' . htmlentities( $v ) . '"';
-          }
-        }
-        echo '>';
+    if ( ! empty( self::$queued ) ) {
+      foreach ( self::$queued as $k => $css ) {
+        self::write_single( $k );
       }
     }
   }

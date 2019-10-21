@@ -25,7 +25,7 @@ class JS {
     if ( self::$hasInit ) {
       return;
     }
-    if ( !empty( self::$configFile ) && file_exists( self::$configFile ) ) {
+    if ( ! empty( self::$configFile ) && file_exists( self::$configFile ) ) {
       /* Specified config file before first call */
       self::readConfig( self::$configFile );
     }
@@ -119,7 +119,7 @@ class JS {
     if ( $init ) {
       self::init();
     }
-    if ( !isset( self::$registered[ $name ] ) ) {
+    if ( ! isset( self::$registered[ $name ] ) ) {
 
       if ( strpos( $name, '/' ) === false ) {
         throw new \Exception( $name . ' not found in registered scripts and does not appear to be a URL' );
@@ -138,7 +138,7 @@ class JS {
 
     if ( isset( $to_queue[ 'dependencies' ] ) && is_array( $to_queue[ 'dependencies' ] ) && count( $to_queue[ 'dependencies' ] ) > 0 ) {
       foreach ( $to_queue[ 'dependencies' ] as $dep ) {
-        if ( !self::is_queued( $dep ) ) {
+        if ( ! self::is_queued( $dep ) ) {
           self::enqueue( $dep );
         }
       }
@@ -157,22 +157,44 @@ class JS {
     }
   }
 
+  /**
+   * Write the script tag for a single registered script. The script does
+   * not have to be queued. This just handles the single script, not any
+   * of its dependencies. 
+   * 
+   * @param type $script
+   */
+  public static function write_single( $script ) {
+    self::init();
+    if ( preg_match( '/^https?:\/\//', $script ) || preg_match( '/^\/\//', $script ) ) {
+      /* It's a link, just write it out */
+      echo '<script type="text/javascript" src="' . $script . '"></script>';
+    }
+    else if ( isset( self::$registered[ $script ] ) ) {
+      $js = self::$registered[ $script ];
+      $ver = '';
+      if ( $js[ 'version' ] !== false ) {
+        $ver = (strpos( $js[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $js[ 'version' ];
+      }
+      echo '<script type="text/javascript" src="' . $js[ 'url' ] . $ver . '"';
+      echo ! empty( $js[ 'name' ] ) ? ' id="' . $js[ 'name' ] . '"' : '';
+      if ( is_array( $js[ 'attributes' ] ) && count( $js[ 'attributes' ] ) > 0 ) {
+        foreach ( $js[ 'attributes' ] as $k => $v ) {
+          echo ' ' . $k . '="' . htmlentities( $v ) . '"';
+        }
+      }
+      echo '></script>';
+    }
+    else {
+      throw new \Exception( $script . ' does not appear to be registered' );
+    }
+  }
+
   public static function write() {
     self::init();
-    if ( !empty( self::$queued ) ) {
-      foreach ( self::$queued as $js ) {
-        $ver = '';
-        if ( $js[ 'version' ] !== false ) {
-          $ver = (strpos( $js[ 'url' ], '?' ) === false ? '?' : '&') . 'v=' . $js[ 'version' ];
-        }
-        echo '<script type="text/javascript" src="' . $js[ 'url' ] . $ver . '"';
-        echo!empty( $js[ 'name' ] ) ? ' id="' . $js[ 'name' ] . '"' : '';
-        if ( is_array( $js[ 'attributes' ] ) && count( $js[ 'attributes' ] ) > 0 ) {
-          foreach ( $js[ 'attributes' ] as $k => $v ) {
-            echo ' ' . $k . '="' . htmlentities( $v ) . '"';
-          }
-        }
-        echo '></script>';
+    if ( ! empty( self::$queued ) ) {
+      foreach ( self::$queued as $k => $js ) {
+        self::write_single( $k );
       }
     }
   }
